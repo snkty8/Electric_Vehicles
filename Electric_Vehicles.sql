@@ -138,8 +138,41 @@ where "Sale_Date" is null;
 and "Sale_Price" = '0';
 
 select * from electric_vehicles_2
-	where "VIN_(1-10)" = '1FADP3R40G';
+	where "VIN_(1-10)" = '1G1RB6E42C'
+	order by "Sale_Date";
 
---There are still mutiple values for each VIN because some of the cars switched owners. Filtering out to show the first sale. 
+-- Need to change format of Sale_Date and Transacation Date to date format
+update electric_vehicles_2 set "Sale_Date" = cast("Sale_Date" as date);
+
+update electric_vehicles_2 set "Transaction_Date" = cast("Transaction_Date" as date);
+
+alter table electric_vehicles_2 
+alter column "Transaction_Date" type date
+USING "Transaction_Date"::date;	
+
+alter table electric_vehicles_2 
+alter column "Sale_Date" type date
+USING "Sale_Date"::date;
+
+select * from electric_vehicles_2;
+
+--drop row_num
+alter table electric_vehicles_2
+drop column row_num;
+
+--There are still multiple rows for most VINs because the vechile was sold. Filtering out to the first sale Sale_Date.
+
+--Rank Transaction_date and Sales_Price, then select those that have rank one
+select * from (select *, dense_rank() over (partition by "VIN_(1-10)" order by "Transaction_Date", "Sale_Price") as rank_Tran
+	from electric_vehicles_2)
+	where rank_tran = 1;
+	
+-- add rank_Tran_Date column to acutal table 
+--alter table electric_vehicles_2 add column rank_Tran_Date int;
 
 
+with test as ( 
+select *, dense_rank() over (partition by "VIN_(1-10)" order by "Transaction_Date") as rank_Tran
+	from electric_vehicles_2)
+update electric_vehicles_2 set rank_tran_date = rank_Tran
+from test;
