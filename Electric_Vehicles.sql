@@ -167,12 +167,160 @@ select * from (select *, dense_rank() over (partition by "VIN_(1-10)" order by "
 	from electric_vehicles_2)
 	where rank_tran = 1;
 	
--- add rank_Tran_Date column to acutal table 
---alter table electric_vehicles_2 add column rank_Tran_Date int;
+--Create new table with ranking 
+CREATE TABLE IF NOT EXISTS public.electric_vehicles_3
+(
+    "Clean_Alternative_Fuel_Vehicle_Type" text COLLATE pg_catalog."default",
+    "VIN_(1-10)" text COLLATE pg_catalog."default",
+    "DOL_Vehicle_ID" text COLLATE pg_catalog."default",
+    "Model_Year" text COLLATE pg_catalog."default",
+    "Make" text COLLATE pg_catalog."default",
+    "Model" text COLLATE pg_catalog."default",
+    "Primary_Use" text COLLATE pg_catalog."default",
+    "Electric_Range" text COLLATE pg_catalog."default",
+    "Odometer_Reading" text COLLATE pg_catalog."default",
+    "Odometer_Reading_Description" text COLLATE pg_catalog."default",
+    "New_or_Used_Vehicle" text COLLATE pg_catalog."default",
+    "Sale_Price" text COLLATE pg_catalog."default",
+    "Sale_Date" text COLLATE pg_catalog."default",
+    "Transaction_Type" text COLLATE pg_catalog."default",
+    "Transaction_Date" text COLLATE pg_catalog."default",
+    "Year" text COLLATE pg_catalog."default",
+    "County" text COLLATE pg_catalog."default",
+    "City" text COLLATE pg_catalog."default",
+    "State" text COLLATE pg_catalog."default",
+    "Postal_Code" text COLLATE pg_catalog."default",
+    "Electric_Utility" text COLLATE pg_catalog."default",
+	"rank_info" int
+)
+
+TABLESPACE pg_default;
+
+insert into electric_vehicles_3
+select *,
+dense_rank() over (partition by "VIN_(1-10)" order by "Transaction_Date", "Sale_Price") as rank_info
+from electric_vehicles_2;
+
+select * from electric_vehicles_3;
+
+--Removes rows with ranking above 1
+delete from electric_vehicles_3 
+where rank_info > 1;
+
+select * from electric_vehicles_3;
+
+--Check for any duplicate VIN. Total rows equal 11629
+select count( distinct "VIN_(1-10)") from electric_vehicles_3;
+
+--Get 11491 VIN when counting the distinct so there are some duplicate VIN remaining
+
+with dups as 
+(select *, 
+	row_number() over(
+	partition by "Clean_Alternative_Fuel_Vehicle_Type",
+	"VIN_(1-10)")
+	as row_num  
+from electric_vehicles_3)
+select * from dups
+where row_num > 1;
+
+select * from electric_vehicles_3 where "VIN_(1-10)" = '1FTBW1XK6N'
+--DOL Vehicle ID shows a difference, but likely will not use this column much
+
+CREATE TABLE IF NOT EXISTS public.electric_vehicles_4
+(
+    "Clean_Alternative_Fuel_Vehicle_Type" text COLLATE pg_catalog."default",
+    "VIN_(1-10)" text COLLATE pg_catalog."default",
+    "DOL_Vehicle_ID" text COLLATE pg_catalog."default",
+    "Model_Year" text COLLATE pg_catalog."default",
+    "Make" text COLLATE pg_catalog."default",
+    "Model" text COLLATE pg_catalog."default",
+    "Primary_Use" text COLLATE pg_catalog."default",
+    "Electric_Range" text COLLATE pg_catalog."default",
+    "Odometer_Reading" text COLLATE pg_catalog."default",
+    "Odometer_Reading_Description" text COLLATE pg_catalog."default",
+    "New_or_Used_Vehicle" text COLLATE pg_catalog."default",
+    "Sale_Price" text COLLATE pg_catalog."default",
+    "Sale_Date" text COLLATE pg_catalog."default",
+    "Transaction_Type" text COLLATE pg_catalog."default",
+    "Transaction_Date" text COLLATE pg_catalog."default",
+    "Year" text COLLATE pg_catalog."default",
+    "County" text COLLATE pg_catalog."default",
+    "City" text COLLATE pg_catalog."default",
+    "State" text COLLATE pg_catalog."default",
+    "Postal_Code" text COLLATE pg_catalog."default",
+    "Electric_Utility" text COLLATE pg_catalog."default",
+    rank_info integer,
+	row_num int
+)
+
+TABLESPACE pg_default;
+
+insert into electric_vehicles_4
+select *, 
+	row_number() over(
+	partition by "Clean_Alternative_Fuel_Vehicle_Type",
+	"VIN_(1-10)")
+	as row_num  
+from electric_vehicles_3;
+
+select * from electric_vehicles_4
+where row_num > 1;
+
+delete from electric_vehicles_4
+where row_num > 1;
+
+select * from electric_vehicles_4
+--Row count now equals 11491
+
+select count(distinct "VIN_(1-10)") from electric_vehicles_4;
+--Distinct VIN count also 11491
+
+select * from electric_vehicles_4;
+
+--Now make sure each column is set to correct data format
+
+alter table electric_vehicles_4 
+alter column "Electric_Range" type int
+USING "Electric_Range"::int;	
+
+alter table electric_vehicles_4 
+alter column "Odometer_Reading" type int
+USING "Odometer_Reading"::int;	
+
+alter table electric_vehicles_4 
+alter column "Sale_Price" type int
+USING "Sale_Price"::int;	
+
+alter table electric_vehicles_4
+alter column "Transaction_Date" type date
+USING "Transaction_Date"::date;	
+
+alter table electric_vehicles_4
+alter column "Sale_Date" type date
+USING "Sale_Date"::date;	
+
+select * from electric_vehicles_4;
+
+--drop rank and row_num columns
+alter table electric_vehicles_4
+drop column row_num;
+
+alter table electric_vehicles_4
+drop column rank_info;
+
+select distinct "Primary_Use" from electric_vehicles_4
+
+select * from electric_vehicles_4
+where "Model" = 'F-150'
+
+--Noticed there are a lot of rows with Electric Range as zero. May be best to removed those. 
+select * from electric_vehicles_4
+where "Electric_Range" = 0;
+
+delete from electric_vehicles_4
+where "Electric_Range" = 0;
+
+select * from electric_vehicles_4;
 
 
-with test as ( 
-select *, dense_rank() over (partition by "VIN_(1-10)" order by "Transaction_Date") as rank_Tran
-	from electric_vehicles_2)
-update electric_vehicles_2 set rank_tran_date = rank_Tran
-from test;
