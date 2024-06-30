@@ -309,7 +309,7 @@ drop column row_num;
 alter table electric_vehicles_4
 drop column rank_info;
 
-select distinct "Primary_Use" from electric_vehicles_4
+select distinct "State" from electric_vehicles_4
 
 select * from electric_vehicles_4
 where "Model" = 'F-150'
@@ -321,6 +321,195 @@ where "Electric_Range" = 0;
 delete from electric_vehicles_4
 where "Electric_Range" = 0;
 
-select * from electric_vehicles_4;
+
+--Moving back to electric_vehicles_2. Realizing it may be best to keep all values by VIN since the vehicle changed ownership
+select * from electric_vehicles_2
+where "Make" = 'TESLA'
+and "VIN_(1-10)" = '5YJ3E1EA7P'
+order by "Sale_Date"
+	
+select * from electric_vehicles_2
+where "VIN_(1-10)" = 'JTMAB3FV8P'
+order by "Sale_Date"
+
+alter table electric_vehicles_2
+alter column "Electric_Range" type int
+USING "Electric_Range"::int;	
+
+alter table electric_vehicles_2 
+alter column "Odometer_Reading" type int
+USING "Odometer_Reading"::int;	
+
+alter table electric_vehicles_2 
+alter column "Sale_Price" type int
+USING "Sale_Price"::int;	
+
+alter table electric_vehicles_2
+alter column "Model_Year" type int
+USING "Model_Year"::int;	
+
+alter table electric_vehicles_2
+alter column "Year" type int
+USING "Year"::int;	
+	
+select * from electric_vehicles_2
 
 
+--Running some exploratory queries to find insights
+-- Sum of top sales by Make each year
+with Make_Year ("Make", "Model", "Sale_Date", "Sale_Price") as 
+(select "Make", "Model", extract(year from "Sale_Date") as test, sum("Sale_Price") as total_cost
+from electric_vehicles_2
+group by "Make", "Model", test
+order by 3 DESC),
+Make_Year_Rank as 
+(select *, dense_rank() over (partition by "Sale_Date" order by "Sale_Price" DESC) as rank_years
+	from Make_Year)
+select * from Make_Year_Rank
+where rank_years <= 3;
+
+-- Avg Top Sale by Make each year
+with Make_Year ("Make", "Model", "Sale_Date", "Sale_Price") as 
+(select "Make", "Model", extract(year from "Sale_Date") as test, round(avg("Sale_Price"),2) as total_cost
+from electric_vehicles_2
+group by "Make", "Model", test
+order by 3 DESC),
+Make_Year_Rank as 
+(select *, dense_rank() over (partition by "Sale_Date" order by "Sale_Price" DESC) as rank_years
+	from Make_Year)
+select * from Make_Year_Rank
+where rank_years <= 3;
+
+--New
+with Make_Year ("Make", "Model", "Sale_Date", "Sale_Price") as 
+(select "Make", "Model", extract(year from "Sale_Date") as test, round(avg("Sale_Price"),2) as total_cost
+from electric_vehicles_2
+	where "New_or_Used_Vehicle" = 'New'
+group by "Make", "Model", test
+order by 3 DESC),
+Make_Year_Rank as 
+(select *, dense_rank() over (partition by "Sale_Date" order by "Sale_Price" DESC) as rank_years
+	from Make_Year)
+select * from Make_Year_Rank
+where rank_years <= 3;
+
+--Used 
+with Make_Year ("Make", "Model", "Sale_Date", "Sale_Price") as 
+(select "Make", "Model", extract(year from "Sale_Date") as test, round(avg("Sale_Price"),2) as total_cost
+from electric_vehicles_2
+	where "New_or_Used_Vehicle" = 'Used'
+group by "Make", "Model", test
+order by 3 DESC),
+Make_Year_Rank as 
+(select *, dense_rank() over (partition by "Sale_Date" order by "Sale_Price" DESC) as rank_years
+	from Make_Year)
+select * from Make_Year_Rank
+where rank_years <= 3;
+
+-- Avg of Top Electric Range by Make
+with Make_Year ("Make", "Model", "Sale_Date", "Electric_Range") as 
+(select "Make", "Model", extract(year from "Sale_Date") as test, round(avg("Electric_Range"),2) as total_cost
+from electric_vehicles_2
+group by "Make", "Model", test
+order by 3 DESC),
+Make_Year_Rank as 
+(select *, dense_rank() over (partition by "Sale_Date" order by "Electric_Range" DESC) as rank_years
+	from Make_Year)
+select * from Make_Year_Rank
+where rank_years <= 3;
+
+-- Top Sales by Make over all years
+select "Make", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+group by "Make"
+order by total_Sales DESC;
+
+-- Top Sales by Make over all years for New
+select "Make", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+where "New_or_Used_Vehicle" = 'New'
+group by "Make"
+order by total_Sales DESC;
+
+-- Top Sales by Make over all years for Used
+select "Make", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+where "New_or_Used_Vehicle" = 'Used'
+group by "Make"
+order by total_Sales DESC;
+
+-- Top Sales by Make and Model over all years for New
+select "Make", "Model", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'New'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Top Sales by Make and Model over all years for Used
+select "Make", "Model", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'Used'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Top Sales by Make and Model over all years
+select "Make", "Model", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Top Sales by Make and Model over all years for New
+select "Make", "Model", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'New'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Top Sales by Make and Model over all years for Used
+select "Make", "Model", sum("Sale_Price") as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'Used'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+
+-- Average Price by Make and Model over all years
+select "Make", "Model", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Average Price by Make and Model over all years for New
+select "Make", "Model", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'New'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Average Price by Make and Model over all years for Used
+select "Make", "Model", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+	where "New_or_Used_Vehicle" = 'Used'
+group by "Make", "Model"
+order by total_Sales DESC;
+
+-- Average Price by Make over all years
+select "Make", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+group by "Make"
+order by total_Sales DESC;
+
+-- Average Price by Make over all years for New
+select "Make", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+		where "New_or_Used_Vehicle" = 'New'
+group by "Make"
+order by total_Sales DESC;
+
+
+-- Average Price by Make over all years for Used
+select "Make", round(avg("Sale_Price"),2) as total_Sales
+from electric_vehicles_2 
+		where "New_or_Used_Vehicle" = 'Used'
+group by "Make"
+order by total_Sales DESC;
