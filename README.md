@@ -40,12 +40,11 @@ Using these top 5 makes, drilled down to total sales by Model
 
 Found Average Price for each Make and Model
 
-<img width="154" alt="image" src="https://github.com/snkty8/Electric_Vehicles/assets/78936833/ecfdea1a-775a-4ea7-937d-2ba13896ecec">
+<img width="263" alt="image" src="https://github.com/snkty8/Electric_Vehicles/assets/78936833/6c2ced10-a44f-47b9-b8e1-04f3e5a6b3f0">
 
 Found Average Electric Range for vehicle 
 
-<img width="154" alt="image" src="https://github.com/snkty8/Electric_Vehicles/assets/78936833/fea5d77b-2865-43c1-8a2d-2162843cd6bf">
-
+<img width="275" alt="image" src="https://github.com/snkty8/Electric_Vehicles/assets/78936833/3f067f6f-1dc5-42d4-b1c4-66f8a72805e4">
 
 Using this info, created Summary of Top Selling Electric Vehicles (insert url to dashboard) to create a story using Tableau. 
 
