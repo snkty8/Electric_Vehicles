@@ -46,9 +46,9 @@ Found Average Electric Range for vehicle
 
 <img width="275" alt="image" src="https://github.com/snkty8/Electric_Vehicles/assets/78936833/3f067f6f-1dc5-42d4-b1c4-66f8a72805e4">
 
-Using this info, created Summary of Top Selling Electric Vehicles (insert url to dashboard) to create a story using Tableau. 
+Using this info, created Summary of Top Selling [Electric Vehicles](https://public.tableau.com/app/profile/sierra.knighten/viz/Electric_Vehicles_2/SummaryofTopSellingElectricVehiclesfrom2012to2024?publish=yes) to create a story using Tableau. 
 
-Findings, TELSA is the best selling vehicle with one of the highest electric range per charge and average price per vehicle. 
+Findings, TELSA is the best selling vehicle with one of the highest electric range per charge, average price per vehicle, and total sales. 
 
 ## Issue encountered during exploration
 Dataset is primarily from the state of Washington. More data would be needed to get a clearer pictures of sales across the United States and other countries. 
